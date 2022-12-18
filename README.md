@@ -5,7 +5,9 @@
 
 参考博客:[https://ruslanspivak.com/lsbasi-part1/]
 
-## 笔记记录
+github:[https://github.com/HeJiZi/SimpleInterpreter]
+
+## 一些笔记
 ### 2022.12.17
 
 几个涉及解释器功能模块划分的名词:**token, lexical analyzer, lexeme, parsing, parser**
@@ -25,15 +27,32 @@ token是一个具有type 和value 的对象
 #### 什么是Lexeme？
 构成token的字符序列被称为lexeme， 比如'1112'是一个lexeme，对应的token为{type=int, value=1112}
 
-#### parsing与parser(lexical analyzer)
+#### Parsing与parser(lexical analyzer)
 parser其实是lexical analyzer的另一个名字，作为解释器的一部分，分析输入流构成的部分被称为parsing。
 
 parser关注于token之间的联系,比如负责识别(1+1)是(int->plus->int)还是(int->minus->int)
 
 解释器根据该关系最终返回一个结果。
 
-#### what is syntax diagram?
+#### What is syntax diagram?
 语法规则的流程图
 
 ![syntax_diagram](doc/syntax_diagram.png)
 
+#### What is context-free grammars?
+一种有些类似于正则表达式的语法描述规则，如以下就是一种grammar:
+```
+expr : factor((Mul|Div)facotr)*
+factor : interger
+```
+每一行都是一条rule，上述的描述里表示我们实现的语言一共有两条rule
+
+每一条rule由两个部分组成，冒号左边的被称为head，右边的被称为body（例子中的`expr`为head， `factor((Mul|Div)facotr)*` 为body）
+
+body和head 又由 terminal 和non-terminal 组成， 像是Mul,Div,Interger的token被称为terminals，expr,factor被称为non-terminals。
+
+左手边的non-terminal又被称为start symbol
+
+\* 代表匹配零次或者多次，在上述例子中表示*(Mul|Div)factor的模式出现0次或多次
+
+[更详细的解释](https://ruslanspivak.com/lsbasi-part4/)

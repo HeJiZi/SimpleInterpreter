@@ -3,114 +3,29 @@
 public class Interpreter
 {
     private const int MaxDigitLength = 2;
-    private const char EndFlag = '\0';
-    private readonly string _text;
-    private int _pos;
-    private char _currentChar;
+
+    private Lexer _lexer;
+    
     private Token _currentToken;
+    
 
-
-    public Interpreter(string text)
+    public Interpreter(Lexer lexer)
     {
-        _text = text;
-        _pos = 0;
-        if (_text.Length > 0)
-        {
-            _currentChar = _text[_pos];
-        }
-        else
-        {
-            _currentChar = EndFlag;
-        }
-        _currentToken = null;
-    }
-
-    // ##########################################################
-    // # Lexer code                                             #
-    // ##########################################################
-    private void Error()
-    {
-        throw new Exception("Error parsing input");
-    }
-
-    private void SkipWhitespace()
-    {
-        while (_currentChar != EndFlag && char.IsWhiteSpace(_currentChar))
-        {
-            Advance();
-        }
+        _lexer = lexer;
+        _currentToken = lexer.GetNextToken();
     }
     
-    private void Advance()
+    private void Error()
     {
-        _pos++;
-        if (_pos >= _text.Length)
-            _currentChar = EndFlag;
-        else
-        {
-            _currentChar = _text[_pos];
-        }
+        throw new Exception("Invalid syntax");
     }
-
-    /// <summary>
-    /// 根据输入流生成一个多位的整形
-    /// </summary>
-    /// <returns></returns>
-    private int Interger()
-    {
-        int intVal = 0;
-        do
-        {
-            intVal = intVal * 10 + (_currentChar - '0');
-            Advance();
-        } while (_currentChar!= EndFlag && char.IsDigit(_currentChar));
-
-        return intVal;
-    }
-
-    /// <summary>
-    /// lexical analyzer/parser
-    /// 将输入流划分成不同的token
-    /// </summary>
-    /// <returns></returns>
-    private Token GetNextToken()
-    {
-        while (_currentChar != EndFlag)
-        {
-            if (char.IsWhiteSpace(_currentChar))
-            {
-                SkipWhitespace();
-                continue;
-            }
-            
-            if (char.IsDigit(_currentChar))
-            {
-                return new Token(TokenType.Interger, Interger());
-            }
-
-            if (_currentChar == '+')
-            {
-                Advance();
-                return new Token(TokenType.Plus, _currentChar);
-            }
-
-            if (_currentChar == '-')
-            {
-                Advance();
-                return new Token(TokenType.Minus, _currentChar);
-            }
-            Error();
-        }
-
-        return new Token(TokenType.Eof, null);
-    }
-
+    
     // ##########################################################
     // # Interpreter code                                       #
     // ##########################################################
     
     /// <summary>
-    /// 比较当前的token是否是一个符合语法规则的token，是的话就继续读，否的话则抛出异常
+    /// 比较当前的token是否是一个符合语法规则的token，是的话就继续读取下个token，否的话则抛出异常
     /// </summary>
     /// <param name="tokenType"></param>
     private void Eat(TokenType tokenType)
@@ -118,7 +33,7 @@ public class Interpreter
         TokenType lastTokenType = _currentToken.Type;
         if (lastTokenType == tokenType)
         {
-            _currentToken = GetNextToken();
+            _currentToken = _lexer.GetNextToken();
         }
         else
         {
@@ -126,19 +41,46 @@ public class Interpreter
         }
     }
 
-    private int Term()
+    /// <summary>
+    /// factor:Interger
+    /// </summary>
+    /// <returns></returns>
+    private int Factor()
     {
         var lastToken = _currentToken;
         Eat(TokenType.Interger);
         return (int)lastToken.Value;
     }
 
+    /// <summary>
+    /// term: factor((MUL|DIV)factor)*
+    /// </summary>
+    /// <returns></returns>
+    private int Term()
+    {
+        int result = Factor();
+        while (_currentToken.Type is TokenType.Mul or TokenType.Div)
+        {
+            if (_currentToken.Type == TokenType.Mul)
+            {
+                Eat(TokenType.Mul);
+                result *= Factor();
+            }
+            else
+            {
+                Eat(TokenType.Div);
+                result /= Factor();
+            }
+        }
+
+        return result;
+    }
+
     public int Expr()
     {
-        _currentToken = GetNextToken();
         int result = Term();
 
-        while (_currentToken.Type == TokenType.Plus || _currentToken.Type == TokenType.Minus)
+        while (_currentToken.Type is TokenType.Plus or TokenType.Minus)
         {
             if (_currentToken.Type == TokenType.Minus)
             {

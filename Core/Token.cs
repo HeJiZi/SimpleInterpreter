@@ -5,6 +5,8 @@ public enum TokenType
     Interger,
     Plus,
     Minus,
+    Mul,
+    Div,
     Eof
 }
 
@@ -12,13 +14,13 @@ public class Token
 {
     public Token(TokenType type, Object value)
     {
-        this.Type = type;
-        this.Value = value;
+        Type = type;
+        Value = value;
     }
 
     public override string ToString()
     {
-        return $"Token({this.Type}, {Convert.ToString(this.Value)})";
+        return $"Token({Type}, {Convert.ToString(Value)})";
     }
 
     public TokenType Type { get; }
