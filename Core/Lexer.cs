@@ -103,6 +103,18 @@ public class Lexer
                 Advance();
                 return new Token(TokenType.Div, _currentChar);
             }
+
+            if (_currentChar == '(')
+            {
+                Advance();
+                return new Token(TokenType.LParen, _currentChar);
+            }
+
+            if (_currentChar == ')')
+            {
+                Advance();
+                return new Token(TokenType.RParen, _currentChar);
+            }
             
             Error();
         }

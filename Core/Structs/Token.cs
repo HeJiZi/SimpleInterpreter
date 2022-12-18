@@ -7,6 +7,8 @@ public enum TokenType
     Minus,
     Mul,
     Div,
+    LParen,
+    RParen,
     Eof
 }
 

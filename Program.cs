@@ -15,7 +15,8 @@ namespace SimpleInterpreter
             while ((curLine = Console.ReadLine()) != null)
             {
                 var lexer = new Lexer(curLine);
-                Console.WriteLine(new Interpreter(lexer).Expr());
+                var parser = new Parser(lexer);
+                Console.WriteLine(new Interpreter(parser).Interprete());
             }
         }
     }

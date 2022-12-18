@@ -26,8 +26,8 @@ github:[https://github.com/HeJiZi/SimpleInterpreter]
 ```
 ## 笔记
 ### 2022-12-17
-#### 结果展示
-总结：实现interpreter, lexer, token三个模块,将语法规则描述翻译成代码，完成了能够解析整形加减乘除的解释器
+#### 阶段性结果
+实现interpreter, lexer, token三个模块,将语法规则描述翻译成代码，完成了能够解析整形加减乘除的解释器
 
 ![](Doc/2022-12-17.png)
 
@@ -74,8 +74,28 @@ body和head 又由 terminal 和non-terminal 组成， 像是Mul,Div,Interger的t
 
 左手边的non-terminal又被称为start symbol
 
-\* 代表匹配零次或者多次，在上述例子中表示*(Mul|Div)factor的模式出现0次或多次
+\* 代表匹配零次或者多次，在上述例子中表示(Mul|Div)factor的模式出现0次或多次
 
-[更详细的解释](https://ruslanspivak.com/lsbasi-part4/)
+笔记仅作为个人理解作用，更详细的解释可以看原文图解：[第四章](https://ruslanspivak.com/lsbasi-part4/)
 
 ### 2022-12-18
+#### 阶段性结果
+添加了括号语法，实现了抽象语法树与一元操作符
+重新划分了模块，当前解释器的处理流程如下
+```
+ =========   Token   ==========   AST   ===============
+ | Lexer |  -------> | Parser | ------> | Interpreter |
+ =========           ==========         ===============
+ 
+```
+
+#### 笔记内容
+#### 抽象语法树（AST）与 ParseTree
+AST是一种用来描绘语法的树形结构，每一个中间结点都是操作符(operator)，每个叶子结点都是操作数(operand)
+
+![AST](Doc/AST.png)
+
+从图中可以看到，AST没有中间的语法结点 比起ParseTree更加简洁和紧凑。
+
+
+

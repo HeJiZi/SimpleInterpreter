@@ -1,99 +1,98 @@
 ﻿namespace SimpleInterpreter.Core;
 
-public class Interpreter
+public class NodeVisitor
 {
-    private const int MaxDigitLength = 2;
-
-    private Lexer _lexer;
+    private  Dictionary<NodeType, Func<AST, int>> _visitMap;
     
-    private Token _currentToken;
-    
-
-    public Interpreter(Lexer lexer)
+    public NodeVisitor()
     {
-        _lexer = lexer;
-        _currentToken = lexer.GetNextToken();
-    }
-    
-    private void Error()
-    {
-        throw new Exception("Invalid syntax");
-    }
-    
-    // ##########################################################
-    // # Interpreter code                                       #
-    // ##########################################################
-    
-    /// <summary>
-    /// 比较当前的token是否是一个符合语法规则的token，是的话就继续读取下个token，否的话则抛出异常
-    /// </summary>
-    /// <param name="tokenType"></param>
-    private void Eat(TokenType tokenType)
-    {
-        TokenType lastTokenType = _currentToken.Type;
-        if (lastTokenType == tokenType)
+        _visitMap = new Dictionary<NodeType, Func<AST, int>>()
         {
-            _currentToken = _lexer.GetNextToken();
-        }
-        else
-        {
-            Error();
-        }
+            { NodeType.Num, VisitNum },
+            { NodeType.BinOp, VisitBinOp},
+            { NodeType.UnaryOp, VisitUnaryOp},
+        };
     }
 
-    /// <summary>
-    /// factor:Interger
-    /// </summary>
-    /// <returns></returns>
-    private int Factor()
+    protected int Visit(AST node)
     {
-        var lastToken = _currentToken;
-        Eat(TokenType.Interger);
-        return (int)lastToken.Value;
-    }
-
-    /// <summary>
-    /// term: factor((MUL|DIV)factor)*
-    /// </summary>
-    /// <returns></returns>
-    private int Term()
-    {
-        int result = Factor();
-        while (_currentToken.Type is TokenType.Mul or TokenType.Div)
+        _visitMap.TryGetValue(node.NodeType, out var visitFunc);
+        if (visitFunc != null)
         {
-            if (_currentToken.Type == TokenType.Mul)
-            {
-                Eat(TokenType.Mul);
-                result *= Factor();
-            }
-            else
-            {
-                Eat(TokenType.Div);
-                result /= Factor();
-            }
+            return visitFunc(node);
         }
 
-        return result;
+        throw new Exception($"No visit Method {node.NodeType}");
+        return 0;
     }
 
-    public int Expr()
+    protected virtual int VisitNum(AST node)
     {
-        int result = Term();
+        Console.WriteLine("No Implement VisitNum");
+        return -1;
+    }
 
-        while (_currentToken.Type is TokenType.Plus or TokenType.Minus)
+    protected virtual int VisitBinOp(AST node)
+    {
+        Console.WriteLine("No Implement VisitBinOp");
+        return -1;
+    }
+
+    protected virtual int VisitUnaryOp(AST node)
+    {
+        Console.WriteLine("No Implement VisitUnaryOp");
+        return -1;
+    }
+    
+}
+
+public class Interpreter: NodeVisitor
+{
+    private Parser _parser;
+    public Interpreter(Parser parser):base()
+    {
+        _parser = parser;
+    }
+    
+    protected override int VisitNum(AST node)
+    {
+        return ((Num)node).Value;
+    }
+
+    protected override int VisitBinOp(AST node)
+    {
+        var binOp = (BinOp)node;
+        if (binOp.Op.Type == TokenType.Plus)
+            return Visit(binOp.Left) + Visit(binOp.Right);
+        if (binOp.Op.Type == TokenType.Minus)
+            return Visit(binOp.Left) - Visit(binOp.Right);
+        if (binOp.Op.Type == TokenType.Mul)
+            return Visit(binOp.Left) * Visit(binOp.Right);
+        if (binOp.Op.Type == TokenType.Div)
+            return Visit(binOp.Left) / Visit(binOp.Right);
+
+        throw new InvalidOperationException($"InValid binOp{binOp.Op.Type}");
+        return -1;
+    }
+
+    protected override int VisitUnaryOp(AST node)
+    {
+        var unaryOp = (UnaryOp)node;
+        if (unaryOp.Op.Type == TokenType.Minus)
         {
-            if (_currentToken.Type == TokenType.Minus)
-            {
-                Eat(TokenType.Minus);
-                result -= Term();
-            }
-            else if (_currentToken.Type == TokenType.Plus)
-            {
-                Eat(TokenType.Plus);
-                result += Term();
-            }
+            return -Visit(unaryOp.Expr);
+        }
+        else if(unaryOp.Op.Type == TokenType.Plus)
+        {
+            return +Visit(unaryOp.Expr);
         }
 
-        return result;
+        return -1;
+    }
+
+    public int Interprete()
+    {
+        var tree = _parser.Parse();
+        return Visit(tree);
     }
 }
