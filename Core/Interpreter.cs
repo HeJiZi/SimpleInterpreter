@@ -2,19 +2,27 @@
 
 public class NodeVisitor
 {
-    private  Dictionary<NodeType, Func<AST, int>> _visitMap;
+    private  Dictionary<NodeType, Func<AST, dynamic>> _visitMap;
     
     public NodeVisitor()
     {
-        _visitMap = new Dictionary<NodeType, Func<AST, int>>()
+        _visitMap = new Dictionary<NodeType, Func<AST, dynamic>>()
         {
             { NodeType.Num, VisitNum },
             { NodeType.BinOp, VisitBinOp},
             { NodeType.UnaryOp, VisitUnaryOp},
+            { NodeType.Compound, VisitCompound},
+            { NodeType.NoOp, VisitNoOp},
+            { NodeType.Assign, VisitAssign},
+            { NodeType.Var, VisitVar},
+            { NodeType.Program, VisitProgram},
+            { NodeType.Block, VisitBlock},
+            { NodeType.VarDecl, VisitVarDecl},
+            { NodeType.Type, VisitType},
         };
     }
 
-    protected int Visit(AST node)
+    protected dynamic Visit(AST node)
     {
         _visitMap.TryGetValue(node.NodeType, out var visitFunc);
         if (visitFunc != null)
@@ -26,56 +34,67 @@ public class NodeVisitor
         return 0;
     }
 
-    protected virtual int VisitNum(AST node)
-    {
-        Console.WriteLine("No Implement VisitNum");
-        return -1;
-    }
+    protected virtual dynamic VisitNum(AST node) { return null; }
+    protected virtual dynamic VisitBinOp(AST node) { return null; }
+    protected virtual dynamic VisitUnaryOp(AST node) {return null;}
+    protected virtual dynamic VisitCompound(AST node) {return null;}
+    protected virtual dynamic VisitNoOp(AST node) {return null;}
+    protected virtual dynamic VisitAssign(AST node) {return null; }
+    protected virtual dynamic VisitVar(AST node) { return null; }
+    protected virtual dynamic VisitProgram(AST node) { return null; }
+    protected virtual dynamic VisitBlock(AST node) { return null; }
+    protected virtual dynamic VisitVarDecl(AST node) { return null; }
+    protected virtual dynamic VisitType(AST node) { return null; }
 
-    protected virtual int VisitBinOp(AST node)
-    {
-        Console.WriteLine("No Implement VisitBinOp");
-        return -1;
-    }
-
-    protected virtual int VisitUnaryOp(AST node)
-    {
-        Console.WriteLine("No Implement VisitUnaryOp");
-        return -1;
-    }
     
 }
 
 public class Interpreter: NodeVisitor
 {
     private Parser _parser;
+    private Dictionary<string, dynamic> GLOBAL_SCOPE;
+    
     public Interpreter(Parser parser):base()
     {
         _parser = parser;
+        GLOBAL_SCOPE = new(10000);
+    }
+
+    public void PrintVars()
+    {
+        foreach (var (key,value) in GLOBAL_SCOPE)
+        {
+            Console.WriteLine("Key = {0}, Value = {1}", key, value);
+        }
     }
     
-    protected override int VisitNum(AST node)
+    protected override dynamic VisitNum(AST node)
     {
         return ((Num)node).Value;
     }
 
-    protected override int VisitBinOp(AST node)
+    protected override dynamic VisitBinOp(AST node)
     {
         var binOp = (BinOp)node;
-        if (binOp.Op.Type == TokenType.Plus)
-            return Visit(binOp.Left) + Visit(binOp.Right);
-        if (binOp.Op.Type == TokenType.Minus)
-            return Visit(binOp.Left) - Visit(binOp.Right);
-        if (binOp.Op.Type == TokenType.Mul)
-            return Visit(binOp.Left) * Visit(binOp.Right);
-        if (binOp.Op.Type == TokenType.Div)
-            return Visit(binOp.Left) / Visit(binOp.Right);
-
-        throw new InvalidOperationException($"InValid binOp{binOp.Op.Type}");
-        return -1;
+        switch (binOp.Op.Type)
+        {
+            case TokenType.Plus:
+                return Visit(binOp.Left) + Visit(binOp.Right);
+            case TokenType.Minus:
+                return Visit(binOp.Left) - Visit(binOp.Right);
+            case TokenType.Mul:
+                return Visit(binOp.Left) * Visit(binOp.Right);
+            case TokenType.INTEGER_DIV:
+                return (int)Visit(binOp.Left) / (int)Visit(binOp.Right);
+            case TokenType.FloatDiv:
+                return (float)Visit(binOp.Left) / (float)Visit(binOp.Right);
+            default:
+                throw new InvalidOperationException($"InValid binOp{binOp.Op.Type}");
+                return null;
+        }
     }
 
-    protected override int VisitUnaryOp(AST node)
+    protected override dynamic VisitUnaryOp(AST node)
     {
         var unaryOp = (UnaryOp)node;
         if (unaryOp.Op.Type == TokenType.Minus)
@@ -90,7 +109,67 @@ public class Interpreter: NodeVisitor
         return -1;
     }
 
-    public int Interprete()
+    protected override dynamic VisitCompound(AST node)
+    {
+        var compound = (Compound)node;
+        foreach (var child in compound.Children)
+        {
+            Visit(child);
+        }
+
+        return -1;
+    }
+
+    protected override dynamic VisitAssign(AST node)
+    {
+        var assign = (Assign)node;
+        var value = Visit(assign.Right);
+        GLOBAL_SCOPE[((Var)assign.Left).Value] = value;
+        return value;
+    }
+
+    protected override dynamic VisitVar(AST node)
+    {
+        var varNode = (Var)node;
+        var varName = varNode.Value;
+        if (!GLOBAL_SCOPE.ContainsKey(varName))
+        {
+            throw new Exception($"No Var {varName}");
+        }
+
+        return GLOBAL_SCOPE[varName];
+    }
+
+    protected override dynamic VisitProgram(AST node)
+    {
+        var program = (Program)node;
+        return Visit(program.Block);
+    }
+
+    protected override dynamic VisitBlock(AST node)
+    {
+        var block = (Block)node;
+        foreach (var declaration in block.Declarations)
+        {
+            Visit(declaration);
+        }
+
+        Visit(block.CompoundStatement);
+
+        return null;
+    }
+
+    protected override dynamic VisitVarDecl(AST node)
+    {
+        return base.VisitVarDecl(node);
+    }
+
+    protected override dynamic VisitType(AST node)
+    {
+        return base.VisitType(node);
+    }
+
+    public dynamic Interprete()
     {
         var tree = _parser.Parse();
         return Visit(tree);

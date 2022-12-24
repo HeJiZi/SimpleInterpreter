@@ -32,6 +32,23 @@ public class Lexer
             Advance();
         }
     }
+
+    private void SkipComment()
+    {
+        while (_currentChar != '}')
+        {
+            Advance();
+        }
+        Advance();
+    }
+
+    private char Peek()
+    {
+        var peekPos = _pos + 1;
+        if (peekPos >= _text.Length)
+            return EndFlag;
+        return _text[peekPos];
+    }
     
     private void Advance()
     {
@@ -44,20 +61,64 @@ public class Lexer
         }
     }
 
+    private Token Id()
+    {
+        //Handle identifiers and reserved keywords
+        int startIndex = _pos;
+        int subLength = 0;
+        while (_currentChar != EndFlag && char.IsAsciiLetterOrDigit(_currentChar))
+        {
+            subLength++;
+            Advance();
+        }
+
+        Token result = null;
+        string identifier = _text.Substring(startIndex, subLength);
+        Token.TryGetReservedKeyWord(identifier, out result);
+        if (result == null)
+        {
+            return new Token(TokenType.Id, identifier);
+        }
+
+        return result;
+
+    }
+
     /// <summary>
-    /// 根据输入流生成一个多位的整形
+    /// 根据输入流生成一个数字
     /// </summary>
     /// <returns></returns>
-    private int Interger()
+    private Token Number()
     {
         int intVal = 0;
+        Token token = null;
         do
         {
             intVal = intVal * 10 + (_currentChar - '0');
             Advance();
         } while (_currentChar!= EndFlag && char.IsDigit(_currentChar));
 
-        return intVal;
+        if (_currentChar == '.')
+        {
+            Advance();
+            float floatVal = 0;
+            float factor = 1;
+            while (_currentChar != EndFlag && char.IsDigit(_currentChar))
+            {
+                floatVal = floatVal * 10 + (_currentChar - '0');
+                factor *= 10;
+                Advance();
+            }
+
+            floatVal /= factor;
+            token = new Token(TokenType.RealConst, intVal + floatVal);
+        }
+        else
+        {
+            token = new Token(TokenType.IntegerConst, intVal);
+        }
+
+        return token;
     }
 
     /// <summary>
@@ -72,51 +133,68 @@ public class Lexer
             if (char.IsWhiteSpace(_currentChar))
             {
                 SkipWhitespace();
+            }
+            
+            if (_currentChar == '{')
+            {
+                Advance();
+                SkipComment();
                 continue;
+            }
+            
+            if (char.IsAsciiLetter(_currentChar))
+            {
+                return Id();
+            }
+
+            if (_currentChar == ':' && Peek() == '=')
+            {
+                Advance();
+                Advance();
+                return new Token(TokenType.Assign, ":=");
             }
             
             if (char.IsDigit(_currentChar))
             {
-                return new Token(TokenType.Interger, Interger());
-            }
-
-            if (_currentChar == '+')
-            {
-                Advance();
-                return new Token(TokenType.Plus, _currentChar);
-            }
-
-            if (_currentChar == '-')
-            {
-                Advance();
-                return new Token(TokenType.Minus, _currentChar);
-            }
-
-            if (_currentChar == '*')
-            {
-                Advance();
-                return new Token(TokenType.Mul, _currentChar);
-            }
-
-            if (_currentChar == '/')
-            {
-                Advance();
-                return new Token(TokenType.Div, _currentChar);
-            }
-
-            if (_currentChar == '(')
-            {
-                Advance();
-                return new Token(TokenType.LParen, _currentChar);
-            }
-
-            if (_currentChar == ')')
-            {
-                Advance();
-                return new Token(TokenType.RParen, _currentChar);
+                return Number();
             }
             
-            Error();
+            switch (_currentChar)
+            {
+                case ';':
+                    Advance();
+                    return new Token(TokenType.Semi, ';');
+                case '.':
+                    Advance();
+                    return new Token(TokenType.Dot, '.');
+                case '+':
+                    Advance();
+                    return new Token(TokenType.Plus, '+');
+                case '-':
+                    Advance();
+                    return new Token(TokenType.Minus, '-');
+                case '*':
+                    Advance();
+                    return new Token(TokenType.Mul, '*');
+                case '/':
+                    Advance();
+                    return new Token(TokenType.FloatDiv, '/');
+                case '(':
+                    Advance();
+                    return new Token(TokenType.LParen, '(');
+                case ')':
+                    Advance();
+                    return new Token(TokenType.RParen, ')');
+                case ':':
+                    Advance();
+                    return new Token(TokenType.Colon, ':');
+                case ',':
+                    Advance();
+                    return new Token(TokenType.Comma, ',');
+                default:
+                    Error();
+                    break;
+            }
         }
 
         return new Token(TokenType.Eof, null);
