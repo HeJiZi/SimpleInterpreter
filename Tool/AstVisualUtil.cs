@@ -14,7 +14,7 @@ public static class AstVisualUtil
     /// <param name="root"></param>
     public static void PrintTree(AST root)
     {
-        Console.WriteLine("\nStart:AST>\n");
+        Console.WriteLine("\nStart:AST>");
 
         Queue<AST> currentLevel= new Queue<AST>();
         Queue<AST> nextLevel = new Queue<AST>();
