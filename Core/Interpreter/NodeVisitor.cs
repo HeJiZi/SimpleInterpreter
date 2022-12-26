@@ -22,7 +22,7 @@ public class NodeVisitor
         };
     }
 
-    protected dynamic Visit(AST node)
+    public dynamic Visit(AST node)
     {
         _visitMap.TryGetValue(node.NodeType, out var visitFunc);
         if (visitFunc != null)
