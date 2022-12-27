@@ -204,31 +204,40 @@ public class Parser
         return new Block(declarations, compoundStatement);
     }
 
-    public List<VarDecl> Declarations()
+    public List<AST> Declarations()
     {
         /*
          * declarations : VAR (variable_declaration SEMI)+
+                    | (PROCEDURE ID SEMI block SEMI)*
                     | empty
          */
-        var result = new List<VarDecl>();
-        if (_currentToken.Type != TokenType.VAR)
+        var result = new List<AST>();
+        if (_currentToken.Type == TokenType.VAR)
         {
-            return result;
+            Eat(TokenType.VAR);
+            while (_currentToken.Type == TokenType.Id)
+            {
+                VariableDeclaration(result);
+                Eat(TokenType.Semi);
+            }
         }
-        Eat(TokenType.VAR);
-        
-        VariableDeclaration(result);
 
-        while (_currentToken.Type == TokenType.Semi)
+        while (_currentToken.Type == TokenType.PROCEDURE)
         {
+            Eat(TokenType.PROCEDURE);
+            string procName = (string)_currentToken.Value;
+            Eat(TokenType.Id);
             Eat(TokenType.Semi);
-            VariableDeclaration(result);
+            Block blockNode = Block();
+            var procedureDecl = new ProcedureDecl(procName, blockNode);
+            result.Add(procedureDecl);
+            Eat(TokenType.Semi);
         }
 
         return result;
     }
 
-    public void VariableDeclaration(List<VarDecl> varDeclaraions)
+    public void VariableDeclaration(List<AST> varDeclaraions)
     {
         //variable_declaration : ID (COMMA ID)* COLON type_spec
         if(_currentToken.Type != TokenType.Id)

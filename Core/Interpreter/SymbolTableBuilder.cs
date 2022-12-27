@@ -12,7 +12,7 @@ public class SymbolTableBuilder:NodeVisitor
 
     public override string ToString()
     {
-        return symbolTable.ToString();
+        return "\nStart:SymbolTable>\n" + symbolTable.ToString();
     }
 
     protected override dynamic VisitBlock(AST node)

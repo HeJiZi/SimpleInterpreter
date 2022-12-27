@@ -1,4 +1,5 @@
-﻿using SimpleInterpreter.Core;
+﻿using System.Reflection;
+using SimpleInterpreter.Core;
 using SimpleInterpreter.Tool;
 
 namespace SimpleInterpreter
@@ -29,44 +30,12 @@ namespace SimpleInterpreter
 
         static string GetProgram()
         {
-            string program1 = @"
-            PROGRAM Part10AST;
-            VAR
-               a, b : INTEGER;
-               y    : REAL;
-               z    : REAL;
-
-            BEGIN {Part10AST}
-               a := 2;
-               b := 10 * a + 10 * a DIV 4;
-               y := 20 / 7 + 3.14;
-               z := y * 5 - a;
-            END.  {Part10AST}";
-
-            string program2 = @"
-            PROGRAM Part11;
-            VAR
-               number : INTEGER;
-               a, b   : INTEGER;
-               y      : REAL;
-
-            BEGIN {Part11}
-               number := 2;
-               a := number ;
-               b := 10 * a + 10 * number DIV 4;
-               y := 20 / 7 + 3.14
-            END.  {Part11}";
-
-            string nameError = @"
-            PROGRAM NameError1;
-            VAR
-               b : INTEGER;
-
-            BEGIN
-               b := 1;
-               a := 2 + b;
-            END.";
-            return program2;
+            Console.WriteLine("Program:>");
+            string programName = "part12";
+            string path = $"../../../Scripts/{programName}.pas";
+            string program = File.ReadAllText(path);
+            Console.WriteLine(program);
+            return program;
         }
 
         static void PrintTokens(Lexer lexer)

@@ -26,7 +26,7 @@ public static class AstVisualUtil
             var node = currentLevel.Dequeue();
             var typeInfo = node.GetType();
             var properties = typeInfo.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            string info = node.NodeType + (node.Token == null?"":$"`{node.Token.Value}`") + " Children=>";
+            string info = $"{node} Children=> ";
             foreach (var propertyInfo in properties)
             {
                 object? value = propertyInfo.GetValue(node);
@@ -63,14 +63,14 @@ public static class AstVisualUtil
                 if (obj is not AST ast)
                     return childInfo;
                 nextLevel.Enqueue(ast);
-                childInfo += ast.NodeType + (ast.Token == null ? "" : $" `{ast.Token.Value}`") + ", ";
+                childInfo += $"{ast}, ";
             }
             return childInfo;
         }
 
         var child = (AST)propertyInfo.GetValue(node);
         nextLevel.Enqueue(child);
-        childInfo += child.NodeType + (child.Token == null ? "" : $"`{child.Token.Value}`") + ", ";
+        childInfo += $"{child}, ";
         return childInfo;
 
     }

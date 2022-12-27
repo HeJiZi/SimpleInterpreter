@@ -6,6 +6,7 @@ public enum TokenType
 {
     //保留关键字
     PROGRAM,
+    PROCEDURE,
     VAR,
     INTEGER_DIV,
     INTEGER,
@@ -36,6 +37,7 @@ public class Token
     private static Dictionary<string, Token> _reservedKeyWords = new()
     {
         {"PROGRAM", new Token(TokenType.PROGRAM, "PROGRAM")},
+        {"PROCEDURE", new Token(TokenType.PROCEDURE, "PROCEDURE")},
         {"VAR", new Token(TokenType.VAR, "VAR")},
         {"DIV", new Token(TokenType.INTEGER_DIV, "DIV")},
         {"INTEGER", new Token(TokenType.INTEGER, "INTEGER")},

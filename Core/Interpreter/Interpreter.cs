@@ -13,9 +13,11 @@ public class Interpreter: NodeVisitor
 
     public void PrintVars()
     {
+        Console.WriteLine("\nStart:Run-time GLOBAL_MEMORY contents>");
+        
         foreach (var (key,value) in GLOBAL_SCOPE)
         {
-            Console.WriteLine("Key = {0}, Value = {1}", key, value);
+            Console.WriteLine("{0} = {1}", key, value);
         }
     }
     

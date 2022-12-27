@@ -14,11 +14,18 @@ public enum NodeType
     Block,
     VarDecl,
     Type,
+    ProcedureDecl,
 }
 public abstract class AST
 {
-    public Token Token { get; protected init; }
+    public Token Token { get; protected init; } = null;
     public abstract NodeType NodeType { get; }
+
+    public override string ToString()
+    {
+        string value = Token == null ? "" : $"`{Token.Value}`";
+        return $"{NodeType}{value}";
+    }
 };
 
 public class BinOp : AST
@@ -127,11 +134,11 @@ public class Block : AST
 {
     public override NodeType NodeType => NodeType.Block;
 
-    public List<VarDecl> Declarations { get; }
+    public List<AST> Declarations { get; }
 
     public AST CompoundStatement { get; }
 
-    public Block(List<VarDecl> declarations, AST compoundStatement)
+    public Block(List<AST> declarations, AST compoundStatement)
     {
         Declarations = declarations;
         CompoundStatement = compoundStatement;
@@ -165,5 +172,25 @@ public class Type : AST
     {
         Token = token;
         Value = (string?)token.Value;
+    }
+}
+
+public class ProcedureDecl : AST
+{
+    public override NodeType NodeType => NodeType.ProcedureDecl;
+
+    public string ProcName { get; }
+
+    public Block BlockNode { get; }
+
+    public ProcedureDecl(string procName, Block blockNode)
+    {
+        ProcName = procName;
+        BlockNode = blockNode;
+    }
+
+    public override string ToString()
+    {
+        return $"{NodeType}`{ProcName}`";
     }
 }
