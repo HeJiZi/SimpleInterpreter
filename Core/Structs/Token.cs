@@ -48,7 +48,7 @@ public class Token
 
     public static void TryGetReservedKeyWord(string key, out Token token)
     {
-        _reservedKeyWords.TryGetValue(key, out token!);
+        _reservedKeyWords.TryGetValue(key.ToUpper(), out token!);
     }
 
     public Token(TokenType type, Object value)

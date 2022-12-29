@@ -15,19 +15,23 @@ public class SymbolTable
     
     private void InitBuiltIns()
     {
-        Define(new BuiltinTypeSymbol("INTEGER"));
-        Define(new BuiltinTypeSymbol("REAL"));
+        Insert(new BuiltinTypeSymbol("INTEGER"));
+        Insert(new BuiltinTypeSymbol("REAL"));
     }
 
     public override string ToString()
     {
-        return $"Symbols: {string.Join(',', symbols.Select(pair => pair.Value.ToString()))}";
+        var symtabHeader = "Symbol table contents";
+        var lines = new List<string>() { "\n", symtabHeader, new('_', symtabHeader.Length) };
+        lines.AddRange(symbols.Select(pair => $"{pair.Key,+7}: {pair.Value}"));
+        lines.Add("\n");
+        return string.Join('\n', lines);
 
     }
 
-    public void Define(Symbol symbol)
+    public void Insert(Symbol symbol)
     {
-        Console.WriteLine($"Define: {symbol}");
+        Console.WriteLine($"Insert: {symbol}");
         symbols[symbol.Name] = symbol;
     }
 
@@ -35,6 +39,6 @@ public class SymbolTable
     {
         Console.WriteLine($"LookUp: {name}");
         symbols.TryGetValue(name, out Symbol result);
-        return result!;
+        return result;
     }
 }

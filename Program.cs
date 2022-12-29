@@ -14,27 +14,31 @@ namespace SimpleInterpreter
 
             var lexer = new Lexer(program);
             var parser = new Parser(lexer);
-            var symtabBuilder = new SymbolTableBuilder();
+            var symtabBuilder = new SemanticAnalyzer();
             var root = parser.Parse();
             symtabBuilder.Visit(root);
             Console.WriteLine(symtabBuilder);
             var interpreter = new Interpreter(parser);
             // interpreter.Interprete();
-            interpreter.Visit(root);
-            interpreter.PrintVars();
+            // interpreter.Visit(root);
+            // interpreter.PrintVars();
 
             // PrintTokens(new Lexer(program));
-            // AstVisualUtil.PrintTree(new Parser(new Lexer(program)).Parse());
+            // AstVisualUtil.PrintTree(root);
 
         }
 
-        static string GetProgram()
+        static string GetProgram(bool print = false)
         {
-            Console.WriteLine("Program:>");
-            string programName = "part12";
+            
+            string programName = "part13";
             string path = $"../../../Scripts/{programName}.pas";
             string program = File.ReadAllText(path);
-            Console.WriteLine(program);
+            if (print)
+            {
+                Console.WriteLine("Program:>");
+                Console.WriteLine(program);
+            }
             return program;
         }
 

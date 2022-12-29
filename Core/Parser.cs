@@ -212,7 +212,7 @@ public class Parser
                     | empty
          */
         var result = new List<AST>();
-        if (_currentToken.Type == TokenType.VAR)
+        while (_currentToken.Type == TokenType.VAR)
         {
             Eat(TokenType.VAR);
             while (_currentToken.Type == TokenType.Id)

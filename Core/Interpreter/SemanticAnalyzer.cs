@@ -1,18 +1,18 @@
 ﻿
 namespace SimpleInterpreter.Core;
 
-public class SymbolTableBuilder:NodeVisitor
+public class SemanticAnalyzer:NodeVisitor
 {
     private SymbolTable symbolTable;
 
-    public SymbolTableBuilder()
+    public SemanticAnalyzer()
     {
         symbolTable = new SymbolTable();
     }
 
     public override string ToString()
     {
-        return "\nStart:SymbolTable>\n" + symbolTable.ToString();
+        return symbolTable.ToString();
     }
 
     protected override dynamic VisitBlock(AST node)
@@ -66,21 +66,21 @@ public class SymbolTableBuilder:NodeVisitor
             throw new Exception($"Undefined Type {typeName}");
         string varName = ((Var)varDecl.VarNode).Value;
         var varSymbol = new VarSymbol(varName, typeSymbol);
-        symbolTable.Define(varSymbol);
+        
+        if (symbolTable.LookUp(varName) is not null)
+        {
+            throw new Exception($"Error: Duplicate identifier '{varName}' found");
+        }
+        symbolTable.Insert(varSymbol);
         return null;
     }
 
     protected override dynamic VisitAssign(AST node)
     {
         var assign = (Assign)node;
-        string varName = ((Var)assign.Left).Value;
-        var varSymbol = symbolTable.LookUp(varName);
-        if (varSymbol == null)
-        {
-            throw new Exception($"Undefined Var {varName}");
-        }
 
         Visit(assign.Right);
+        Visit(assign.Left);
         return null;
     }
 
@@ -89,7 +89,7 @@ public class SymbolTableBuilder:NodeVisitor
         var varNode = (Var)node;
         var varSymbol = symbolTable.LookUp(varNode.Value);
         if (varSymbol == null)
-            throw new Exception("Undefined Var {varName}");
+            throw new Exception($"Error: Symbol(identifier) not found {varNode.Value}");
         return null;
     }
 }
