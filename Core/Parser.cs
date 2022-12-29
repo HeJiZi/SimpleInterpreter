@@ -207,8 +207,8 @@ public class Parser
     public List<AST> Declarations()
     {
         /*
-         * declarations : VAR (variable_declaration SEMI)+
-                    | (PROCEDURE ID SEMI block SEMI)*
+         * declarations : (VAR (variable_declaration SEMI)+)*
+                    | (PROCEDURE ID (LPAREN formal_parameter_list RPAREN)? SEMI block SEMI)*
                     | empty
          */
         var result = new List<AST>();
@@ -227,14 +227,58 @@ public class Parser
             Eat(TokenType.PROCEDURE);
             string procName = (string)_currentToken.Value;
             Eat(TokenType.Id);
+            var @params = new List<Param>();
+            if (_currentToken.Type == TokenType.LParen)
+            {
+                Eat(TokenType.LParen);
+                FormalParameterList(@params);
+                Eat(TokenType.RParen);
+            }
             Eat(TokenType.Semi);
             Block blockNode = Block();
-            var procedureDecl = new ProcedureDecl(procName, blockNode);
+            var procedureDecl = new ProcedureDecl(procName, @params, blockNode);
             result.Add(procedureDecl);
             Eat(TokenType.Semi);
         }
 
         return result;
+    }
+
+    public void FormalParameterList(List<Param> result)
+    {
+        /*formal_parameter_list : formal_parameters
+                              | formal_parameters SEMI formal_parameter_list
+         */
+        if (_currentToken.Type == TokenType.Id)
+        {
+            FormalParameters(result);
+            while (_currentToken.Type == TokenType.Semi)
+            {
+                Eat(TokenType.Semi);
+                FormalParameters(result);
+            }
+        }
+    }
+
+    public void FormalParameters(List<Param> parameters)
+    {
+        // formal_parameters : ID (COMMA ID)* COLON type_spec
+        tempVarList.Clear();
+        tempVarList.Add((Var)Variable());
+        while (_currentToken.Type == TokenType.Comma)
+        {
+            Eat(TokenType.Comma);
+            tempVarList.Add((Var)Variable());
+        }
+        Eat(TokenType.Colon);
+
+        var typeNode = TypeNode();
+        foreach (var varNode in tempVarList)
+        {
+            parameters.Add(new Param(varNode, typeNode));
+        }
+
+        tempVarList.Clear();
     }
 
     public void VariableDeclaration(List<AST> varDeclaraions)

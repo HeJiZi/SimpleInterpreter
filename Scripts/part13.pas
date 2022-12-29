@@ -1,4 +1,4 @@
-﻿program SymTab6;
+﻿program part13;
 var x, y : integer;
 var y : real;
 begin

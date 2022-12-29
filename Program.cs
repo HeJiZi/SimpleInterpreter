@@ -14,11 +14,10 @@ namespace SimpleInterpreter
 
             var lexer = new Lexer(program);
             var parser = new Parser(lexer);
-            var symtabBuilder = new SemanticAnalyzer();
+            var semanticAnalyzer = new SemanticAnalyzer();
             var root = parser.Parse();
-            symtabBuilder.Visit(root);
-            Console.WriteLine(symtabBuilder);
-            var interpreter = new Interpreter(parser);
+            semanticAnalyzer.Visit(root);
+            // var interpreter = new Interpreter(parser);
             // interpreter.Interprete();
             // interpreter.Visit(root);
             // interpreter.PrintVars();
@@ -31,7 +30,7 @@ namespace SimpleInterpreter
         static string GetProgram(bool print = false)
         {
             
-            string programName = "part13";
+            string programName = "part14";
             string path = $"../../../Scripts/{programName}.pas";
             string program = File.ReadAllText(path);
             if (print)

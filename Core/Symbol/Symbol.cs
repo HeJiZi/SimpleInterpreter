@@ -21,7 +21,7 @@ public class BuiltinTypeSymbol:Symbol
 
     public override string ToString()
     {
-        return Name;
+        return $"<{GetType().Name}(name='{Name}')>";
     }
 }
 
@@ -34,6 +34,21 @@ public class VarSymbol : Symbol
 
     public override string ToString()
     {
-        return $"<{Name}:{Type}>";
+        return $"<{GetType().Name}(name='{Name}', type='{Type.Name}')>";
+    }
+}
+
+public class ProcedureSymbol : Symbol
+{
+    public List<VarSymbol> Params { get; }
+
+    public ProcedureSymbol(string name, List<VarSymbol> pParams = null) : base(name)
+    {
+        Params = pParams == null ? new List<VarSymbol>() : pParams;
+    }
+
+    public override string ToString()
+    {
+        return $"<{GetType().Name}(name={Name}, parameters=[{string.Join(',', Params)}])>";
     }
 }

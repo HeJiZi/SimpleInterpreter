@@ -15,6 +15,7 @@ public enum NodeType
     VarDecl,
     Type,
     ProcedureDecl,
+    Param,
 }
 public abstract class AST
 {
@@ -181,16 +182,34 @@ public class ProcedureDecl : AST
 
     public string ProcName { get; }
 
+    public List<Param> Params { get; }
+
     public Block BlockNode { get; }
 
-    public ProcedureDecl(string procName, Block blockNode)
+    public ProcedureDecl(string procName, List<Param> @params, Block blockNode)
     {
         ProcName = procName;
         BlockNode = blockNode;
+        Params = @params;
     }
 
     public override string ToString()
     {
         return $"{NodeType}`{ProcName}`";
+    }
+}
+
+public class Param : AST
+{
+    public override NodeType NodeType => NodeType.Param;
+    
+    public Var VarNode { get; }
+
+    public Type TypeNode { get; }
+
+    public Param(Var varNode, Type typeNode)
+    {
+        VarNode = varNode;
+        TypeNode = typeNode;
     }
 }
