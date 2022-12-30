@@ -20,6 +20,7 @@ public class NodeVisitor
             { NodeType.VarDecl, VisitVarDecl},
             { NodeType.Type, VisitType},
             { NodeType.ProcedureDecl, VisitProcedureDecl},
+            { NodeType.ProcedureCall, VisitProcedureCall}
         };
     }
 
@@ -47,5 +48,6 @@ public class NodeVisitor
     protected virtual dynamic VisitVarDecl(AST node) { return null; }
     protected virtual dynamic VisitType(AST node) { return null; }
     protected virtual dynamic VisitProcedureDecl(AST node) { return null; }
+    protected virtual dynamic VisitProcedureCall(AST node){ return null; }
 
 }

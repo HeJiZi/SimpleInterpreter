@@ -162,6 +162,7 @@ public class Parser
     {
         /*
         statement : compound_statement
+              | proccall_statement
               | assignment_statement
               | empty
         */
@@ -170,7 +171,7 @@ public class Parser
             case TokenType.BEGIN:
                 return CompoundStatement();
             case TokenType.Id:
-                return AssignmentStatement();
+                return _lexer.CurrentChar == '(' ? ProcCallStatement() : AssignmentStatement();
             default:
                 return Empty();
         }
@@ -321,5 +322,29 @@ public class Parser
         var token = _currentToken;
         Eat(_currentToken.Type == TokenType.INTEGER ? TokenType.INTEGER : TokenType.REAL);
         return new Type(token);
+    }
+
+    public ProcedureCall ProcCallStatement()
+    {
+        //proccall_statement : ID LPAREN (expr (COMMA expr)*)? RPAREN
+        var token = _currentToken;
+        string procName = (string)_currentToken.Value;
+        
+        Eat(TokenType.Id);
+        Eat(TokenType.LParen);
+        List<AST> actualParams = new List<AST>();
+        if (_currentToken.Type != TokenType.RParen)
+        {
+            actualParams.Add(Expr());
+        }
+
+        while (_currentToken.Type == TokenType.Comma)
+        {
+            Eat(TokenType.Comma);
+            actualParams.Add(Expr());
+        }
+        Eat(TokenType.RParen);
+
+        return new ProcedureCall(procName, actualParams, token);
     }
 }

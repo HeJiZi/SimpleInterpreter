@@ -11,7 +11,7 @@ namespace SimpleInterpreter
         {
 
             // TestSymbol();
-            LogUtil.OpenLog = false;
+            LogUtil.OpenLog = true;
             string curLine;
             string program = GetProgram();
 
@@ -26,14 +26,14 @@ namespace SimpleInterpreter
             // interpreter.PrintVars();
 
             // PrintTokens(new Lexer(program));
-            // AstVisualUtil.PrintTree(root);
+            AstVisualUtil.PrintTree(root);
 
         }
 
         static string GetProgram(bool print = false)
         {
             
-            string programName = "part15";
+            string programName = "part16";
             string path = $"../../../Scripts/{programName}.pas";
             string program = File.ReadAllText(path);
             if (print)

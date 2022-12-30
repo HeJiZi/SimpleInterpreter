@@ -12,6 +12,8 @@ public class Lexer
     private int _lineno;
     private int _column;
 
+    public char CurrentChar => _currentChar;
+
     public Lexer(string text)
     {
         _text = text;

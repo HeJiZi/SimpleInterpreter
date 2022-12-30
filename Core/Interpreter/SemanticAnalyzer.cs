@@ -145,4 +145,15 @@ public class SemanticAnalyzer:NodeVisitor
         
         return null;
     }
+
+    protected override dynamic VisitProcedureCall(AST node)
+    {
+        var procedureCall = (ProcedureCall)node;
+        foreach (var actualParam in procedureCall.ActualParams)
+        {
+            Visit(actualParam);
+        }
+
+        return null;
+    }
 }

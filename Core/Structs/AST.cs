@@ -16,6 +16,7 @@ public enum NodeType
     Type,
     ProcedureDecl,
     Param,
+    ProcedureCall,
 }
 public abstract class AST
 {
@@ -211,5 +212,21 @@ public class Param : AST
     {
         VarNode = varNode;
         TypeNode = typeNode;
+    }
+}
+
+public class ProcedureCall : AST
+{
+    public override NodeType NodeType => NodeType.ProcedureCall;
+
+    public string ProcName { get; }
+
+    public List<AST> ActualParams { get; }
+
+    public ProcedureCall(string procName, List<AST> actualParams, Token token)
+    {
+        ProcName = procName;
+        ActualParams = actualParams;
+        Token = token;
     }
 }
