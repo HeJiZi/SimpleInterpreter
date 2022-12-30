@@ -34,35 +34,53 @@ public enum TokenType
 
 public class Token
 {
-    private static Dictionary<string, Token> _reservedKeyWords = new()
-    {
-        {"PROGRAM", new Token(TokenType.PROGRAM, "PROGRAM")},
-        {"PROCEDURE", new Token(TokenType.PROCEDURE, "PROCEDURE")},
-        {"VAR", new Token(TokenType.VAR, "VAR")},
-        {"DIV", new Token(TokenType.INTEGER_DIV, "DIV")},
-        {"INTEGER", new Token(TokenType.INTEGER, "INTEGER")},
-        {"REAL", new Token(TokenType.REAL, "REAL")},
-        {"BEGIN", new Token(TokenType.BEGIN, "BEGIN")},
-        {"END", new Token(TokenType.END, "End")},
-    };
+    private static Dictionary<string, Token> _reservedKeyWords;
 
+    public static void BuildReservedKeyWordsDict()
+    {
+        _reservedKeyWords = new Dictionary<string, Token>();
+        var startToken = TokenType.PROGRAM;
+        var endToken = TokenType.END;
+        for (var type = startToken; type <= endToken; type++)
+        {
+            if (type == TokenType.INTEGER_DIV)
+            {
+                _reservedKeyWords.Add("DIV", new Token(type, "DIV"));
+            }
+            else
+            {
+                _reservedKeyWords.Add(type.ToString(), new Token(type, type.ToString()));
+            }
+        }
+    }
+    
     public static void TryGetReservedKeyWord(string key, out Token token)
     {
+        if (_reservedKeyWords == null)
+        {
+            BuildReservedKeyWordsDict();
+        }
         _reservedKeyWords.TryGetValue(key.ToUpper(), out token!);
     }
 
-    public Token(TokenType type, Object value)
+    public Token(TokenType type, Object value, int lineno = 0, int column = 0)
     {
         Type = type;
         Value = value;
+        Lineno = lineno;
+        Column = column;
     }
 
     public override string ToString()
     {
-        return $"Token({Type}, {Convert.ToString(Value)})";
+        return $"Token({Type}, {Convert.ToString(Value)}, position={Lineno}:{Column})";
     }
 
     public TokenType Type { get; }
 
     public Object Value { get; }
+
+    public int Lineno { get; }
+
+    public int Column { get; }
 }

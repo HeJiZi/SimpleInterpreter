@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using SimpleInterpreter.Core;
+using SimpleInterpreter.Exceptions;
 using SimpleInterpreter.Tool;
 
 namespace SimpleInterpreter
@@ -8,7 +9,9 @@ namespace SimpleInterpreter
     {
         static void Main(string[] args)
         {
+
             // TestSymbol();
+            LogUtil.OpenLog = false;
             string curLine;
             string program = GetProgram();
 
@@ -30,7 +33,7 @@ namespace SimpleInterpreter
         static string GetProgram(bool print = false)
         {
             
-            string programName = "part14";
+            string programName = "part15";
             string path = $"../../../Scripts/{programName}.pas";
             string program = File.ReadAllText(path);
             if (print)

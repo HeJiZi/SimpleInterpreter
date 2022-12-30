@@ -1,4 +1,6 @@
-﻿namespace SimpleInterpreter.Core;
+﻿using SimpleInterpreter.Exceptions;
+
+namespace SimpleInterpreter.Core;
 
 public class Lexer
 {
@@ -7,22 +9,21 @@ public class Lexer
     private int _pos;
     private char _currentChar;
 
+    private int _lineno;
+    private int _column;
+
     public Lexer(string text)
     {
         _text = text;
         _pos = 0;
-        if (_text.Length > 0)
-        {
-            _currentChar = _text[_pos];
-        }
-        else
-        {
-            _currentChar = EndFlag;
-        }
+        _currentChar = _text.Length > 0 ? _text[_pos] : EndFlag;
+
+        _lineno = 1;
+        _column = 1;
     }
     private void Error()
     {
-        throw new Exception("Invalid character");
+        throw new LexerError(message:$"Lexer error on '{_currentChar}' line: {_lineno} column: {_column}");
     }
 
     private void SkipWhitespace()
@@ -52,11 +53,20 @@ public class Lexer
     
     private void Advance()
     {
+        if (_currentChar == '\n')
+        {
+            _lineno++;
+            _column = 0;
+        }
+        
         _pos++;
         if (_pos >= _text.Length)
+        {
             _currentChar = EndFlag;
+        }
         else
         {
+            _column++;
             _currentChar = _text[_pos];
         }
     }
@@ -66,7 +76,7 @@ public class Lexer
         //Handle identifiers and reserved keywords
         int startIndex = _pos;
         int subLength = 0;
-        while (_currentChar != EndFlag && char.IsAsciiLetterOrDigit(_currentChar))
+        while (_currentChar != EndFlag && char.IsLetterOrDigit(_currentChar))
         {
             subLength++;
             Advance();
@@ -77,7 +87,7 @@ public class Lexer
         Token.TryGetReservedKeyWord(identifier, out result);
         if (result == null)
         {
-            return new Token(TokenType.Id, identifier);
+            return new Token(TokenType.Id, identifier, _lineno, _column);
         }
 
         return result;
@@ -111,11 +121,11 @@ public class Lexer
             }
 
             floatVal /= factor;
-            token = new Token(TokenType.RealConst, intVal + floatVal);
+            token = new Token(TokenType.RealConst, intVal + floatVal, _lineno, _column);
         }
         else
         {
-            token = new Token(TokenType.IntegerConst, intVal);
+            token = new Token(TokenType.IntegerConst, intVal, _lineno, _column);
         }
 
         return token;
@@ -142,7 +152,7 @@ public class Lexer
                 continue;
             }
             
-            if (char.IsAsciiLetter(_currentChar))
+            if (char.IsLetter(_currentChar))
             {
                 return Id();
             }
@@ -151,7 +161,7 @@ public class Lexer
             {
                 Advance();
                 Advance();
-                return new Token(TokenType.Assign, ":=");
+                return new Token(TokenType.Assign, ":=", _lineno, _column);
             }
             
             if (char.IsDigit(_currentChar))
@@ -163,41 +173,41 @@ public class Lexer
             {
                 case ';':
                     Advance();
-                    return new Token(TokenType.Semi, ';');
+                    return new Token(TokenType.Semi, ';', _lineno, _column);
                 case '.':
                     Advance();
-                    return new Token(TokenType.Dot, '.');
+                    return new Token(TokenType.Dot, '.', _lineno, _column);
                 case '+':
                     Advance();
-                    return new Token(TokenType.Plus, '+');
+                    return new Token(TokenType.Plus, '+', _lineno, _column);
                 case '-':
                     Advance();
-                    return new Token(TokenType.Minus, '-');
+                    return new Token(TokenType.Minus, '-', _lineno, _column);
                 case '*':
                     Advance();
-                    return new Token(TokenType.Mul, '*');
+                    return new Token(TokenType.Mul, '*', _lineno, _column);
                 case '/':
                     Advance();
-                    return new Token(TokenType.FloatDiv, '/');
+                    return new Token(TokenType.FloatDiv, '/', _lineno, _column);
                 case '(':
                     Advance();
-                    return new Token(TokenType.LParen, '(');
+                    return new Token(TokenType.LParen, '(', _lineno, _column);
                 case ')':
                     Advance();
-                    return new Token(TokenType.RParen, ')');
+                    return new Token(TokenType.RParen, ')', _lineno, _column);
                 case ':':
                     Advance();
-                    return new Token(TokenType.Colon, ':');
+                    return new Token(TokenType.Colon, ':', _lineno, _column);
                 case ',':
                     Advance();
-                    return new Token(TokenType.Comma, ',');
+                    return new Token(TokenType.Comma, ',', _lineno, _column);
                 default:
                     Error();
                     break;
             }
         }
 
-        return new Token(TokenType.Eof, null);
+        return new Token(TokenType.Eof, null, _lineno, _column);
     }
 
 }

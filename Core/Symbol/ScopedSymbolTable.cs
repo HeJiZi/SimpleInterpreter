@@ -50,13 +50,13 @@ public class ScopedSymbolTable
 
     public void Insert(Symbol symbol)
     {
-        Console.WriteLine($"Insert: {symbol}");
+        LogUtil.Log($"Insert: {symbol}");
         symbols[symbol.Name] = symbol;
     }
 
     public Symbol LookUp(string name, bool currentScopeOnly = false)
     {
-        Console.WriteLine($"Lookup: {name}. (Scope name: {scopeName})");
+        LogUtil.Log($"Lookup: {name}. (Scope name: {scopeName})");
         symbols.TryGetValue(name, out Symbol result);
         if (result != null || currentScopeOnly)
             return result;

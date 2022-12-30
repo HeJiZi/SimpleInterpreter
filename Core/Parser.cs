@@ -1,4 +1,6 @@
-﻿namespace SimpleInterpreter.Core;
+﻿using SimpleInterpreter.Exceptions;
+
+namespace SimpleInterpreter.Core;
 
 public class Parser
 {
@@ -13,16 +15,16 @@ public class Parser
         _currentToken = lexer.GetNextToken();
     }
     
-    private void Error()
+    private void Error(string errorCode, Token token)
     {
-        throw new Exception("Invalid syntax");
+        throw new ParserError(errorCode:errorCode, token:token, message: $"{errorCode} -> {token}");
     }
     
     public AST Parse()
     {
         var node = Program();
         if(_currentToken.Type != TokenType.Eof)
-            Error();
+            Error(ErrorCode.UnexpectedToken, _currentToken);
         return node;
     }
 
@@ -51,7 +53,7 @@ public class Parser
         }
         else
         {
-            Error();
+            Error(ErrorCode.UnexpectedToken, _currentToken);
         }
     }
 
@@ -89,7 +91,7 @@ public class Parser
             case TokenType.Id:
                 return Variable();
         }
-        Error();
+        Error(ErrorCode.UnexpectedToken, _currentToken);
         return null;
     }
 
@@ -152,7 +154,7 @@ public class Parser
             children.Add(Statement());
         }
         if(_currentToken.Type == TokenType.Id)
-            Error();
+            Error(ErrorCode.UnexpectedToken, _currentToken);
 
     }
 
@@ -224,24 +226,29 @@ public class Parser
 
         while (_currentToken.Type == TokenType.PROCEDURE)
         {
-            Eat(TokenType.PROCEDURE);
-            string procName = (string)_currentToken.Value;
-            Eat(TokenType.Id);
-            var @params = new List<Param>();
-            if (_currentToken.Type == TokenType.LParen)
-            {
-                Eat(TokenType.LParen);
-                FormalParameterList(@params);
-                Eat(TokenType.RParen);
-            }
-            Eat(TokenType.Semi);
-            Block blockNode = Block();
-            var procedureDecl = new ProcedureDecl(procName, @params, blockNode);
-            result.Add(procedureDecl);
-            Eat(TokenType.Semi);
+            result.Add(ProcedureDeclaration());
         }
 
         return result;
+    }
+
+    public ProcedureDecl ProcedureDeclaration()
+    {
+        Eat(TokenType.PROCEDURE);
+        string procName = (string)_currentToken.Value;
+        Eat(TokenType.Id);
+        var @params = new List<Param>();
+        if (_currentToken.Type == TokenType.LParen)
+        {
+            Eat(TokenType.LParen);
+            FormalParameterList(@params);
+            Eat(TokenType.RParen);
+        }
+        Eat(TokenType.Semi);
+        Block blockNode = Block();
+        var procedureDecl = new ProcedureDecl(procName, @params, blockNode);
+        Eat(TokenType.Semi);
+        return procedureDecl;
     }
 
     public void FormalParameterList(List<Param> result)

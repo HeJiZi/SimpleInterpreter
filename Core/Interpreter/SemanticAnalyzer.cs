@@ -1,5 +1,18 @@
 ﻿
+using SimpleInterpreter.Exceptions;
+
 namespace SimpleInterpreter.Core;
+
+public static class LogUtil
+{
+    public static bool OpenLog = false;
+
+    public static void Log(object message)
+    {
+        if(OpenLog)
+            Console.WriteLine(message.ToString());
+    }
+}
 
 public class SemanticAnalyzer:NodeVisitor
 {
@@ -9,6 +22,11 @@ public class SemanticAnalyzer:NodeVisitor
     {
         // symbolTable = new ScopedSymbolTable("global", 1);
         currentScope = null;
+    }
+
+    private void Error(string errorCode, Token token)
+    {
+        throw new SemanticError(errorCode: errorCode, token: token, message: $"{errorCode} -> {token}");
     }
 
     public override string ToString()
@@ -30,15 +48,14 @@ public class SemanticAnalyzer:NodeVisitor
 
     protected override dynamic VisitProgram(AST node)
     {
-        Console.WriteLine("ENTER scope: global");
+        LogUtil.Log("ENTER scope: global");
         var globalScope = new ScopedSymbolTable("global", 1, currentScope);
         currentScope = globalScope;
         
         Visit(((Program)node).Block);
         
-        Console.WriteLine(globalScope);
-        currentScope = currentScope.EnclosingScope;
-        Console.WriteLine("LEAVE scope: global");
+        LogUtil.Log(globalScope);
+        LogUtil.Log("LEAVE scope: global");
         return null;
     }
 
@@ -50,11 +67,11 @@ public class SemanticAnalyzer:NodeVisitor
         return base.VisitBinOp(node);
     }
 
-    protected override dynamic VisitUnaryOp(AST node)
-    {
-        Visit(((UnaryOp)node).Expr);
-        return base.VisitUnaryOp(node);
-    }
+    // protected override dynamic VisitUnaryOp(AST node)
+    // {
+    //     Visit(((UnaryOp)node).Expr);
+    //     return base.VisitUnaryOp(node);
+    // }
 
     protected override dynamic VisitCompound(AST node)
     {
@@ -78,7 +95,7 @@ public class SemanticAnalyzer:NodeVisitor
         
         if (currentScope.LookUp(varName, true) is not null)
         {
-            throw new Exception($"Error: Duplicate identifier '{varName}' found");
+            Error(ErrorCode.DuplicateId, varDecl.VarNode.Token);
         }
         currentScope.Insert(varSymbol);
         return null;
@@ -98,7 +115,7 @@ public class SemanticAnalyzer:NodeVisitor
         var varNode = (Var)node;
         var varSymbol = currentScope.LookUp(varNode.Value);
         if (varSymbol == null)
-            throw new Exception($"Error: Symbol(identifier) not found {varNode.Value}");
+            Error(ErrorCode.IdNotFound, varNode.Token);
         return null;
     }
 
@@ -108,7 +125,7 @@ public class SemanticAnalyzer:NodeVisitor
         var procName = procedureDecl.ProcName;
         var procSymbol = new ProcedureSymbol(procName);
         currentScope.Insert(procSymbol);
-        Console.WriteLine($"ENTER scope: {procName}");
+        LogUtil.Log($"ENTER scope: {procName}");
         var procedureScope = new ScopedSymbolTable(procName, currentScope.ScopeLeve + 1, currentScope);
         currentScope = procedureScope;
 
@@ -122,9 +139,9 @@ public class SemanticAnalyzer:NodeVisitor
         }
 
         Visit(procedureDecl.BlockNode);
-        Console.WriteLine(procedureScope);
+        LogUtil.Log(procedureScope);
         currentScope = currentScope.EnclosingScope;
-        Console.WriteLine($"LEAVE scope: {procName}");
+        LogUtil.Log($"LEAVE scope: {procName}");
         
         return null;
     }
