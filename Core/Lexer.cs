@@ -89,6 +89,10 @@ public class Lexer
         {
             return new Token(TokenType.Id, identifier, _lineno, _column);
         }
+        else
+        {
+            result = new Token(result.Type, result.Value, _lineno, _column);
+        }
 
         return result;
 
