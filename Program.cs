@@ -11,7 +11,9 @@ namespace SimpleInterpreter
         {
 
             // TestSymbol();
-            LogUtil.OpenLog = true;
+            // TestStack();
+            LogUtil.OpenLog = false;
+            
             string curLine;
             string program = GetProgram();
 
@@ -20,20 +22,21 @@ namespace SimpleInterpreter
             var semanticAnalyzer = new SemanticAnalyzer();
             var root = parser.Parse();
             semanticAnalyzer.Visit(root);
-            // var interpreter = new Interpreter(parser);
+            var interpreter = new Interpreter(parser);
+            Interpreter.ShouldLogStack = true;
             // interpreter.Interprete();
-            // interpreter.Visit(root);
+            interpreter.Visit(root);
             // interpreter.PrintVars();
 
             // PrintTokens(new Lexer(program));
-            AstVisualUtil.PrintTree(root);
+            // AstVisualUtil.PrintTree(root);
 
         }
 
         static string GetProgram(bool print = false)
         {
             
-            string programName = "part16";
+            string programName = "part17";
             string path = $"../../../Scripts/{programName}.pas";
             string program = File.ReadAllText(path);
             if (print)
@@ -66,6 +69,17 @@ namespace SimpleInterpreter
             Console.WriteLine(realType);
             Console.WriteLine(xSymbol);
             Console.WriteLine(ySymbol);
+        }
+
+        static void TestStack()
+        {
+            var stack = new CallStack();
+            var ar = new ActivationRecord("Main", ARType.RPOGRAM, 1);
+            Console.WriteLine(ar);
+            ar["y"] = 7;
+            Console.WriteLine(ar);
+            stack.Push(ar);
+            Console.WriteLine(stack);
         }
     }
 

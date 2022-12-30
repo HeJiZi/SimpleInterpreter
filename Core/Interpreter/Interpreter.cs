@@ -2,25 +2,30 @@
 
 public class Interpreter: NodeVisitor
 {
-    private Parser _parser;
-    private Dictionary<string, dynamic> GLOBAL_SCOPE;
+    public static bool ShouldLogStack = false;
+
+    private void Log(object message)
+    {
+        if (ShouldLogStack)
+        {
+            Console.WriteLine(message.ToString());
+        }
+    }
     
+    private Parser _parser;
+    private CallStack _callStack;
+
     public Interpreter(Parser parser):base()
     {
         _parser = parser;
-        GLOBAL_SCOPE = new(10000);
+        _callStack = new CallStack();
     }
 
     public void PrintVars()
     {
-        Console.WriteLine("\nStart:Run-time GLOBAL_MEMORY contents>");
-        
-        foreach (var (key,value) in GLOBAL_SCOPE)
-        {
-            Console.WriteLine("{0} = {1}", key, value);
-        }
+        Console.WriteLine(_callStack.ToString());
     }
-    
+
     protected override dynamic VisitNum(AST node)
     {
         return ((Num)node).Value;
@@ -77,7 +82,10 @@ public class Interpreter: NodeVisitor
     {
         var assign = (Assign)node;
         var value = Visit(assign.Right);
-        GLOBAL_SCOPE[((Var)assign.Left).Value] = value;
+        var ar = _callStack.Peek();
+
+        var varName = ((Var)assign.Left).Value;
+        ar[varName] = value;
         return value;
     }
 
@@ -85,18 +93,26 @@ public class Interpreter: NodeVisitor
     {
         var varNode = (Var)node;
         var varName = varNode.Value;
-        if (!GLOBAL_SCOPE.ContainsKey(varName))
-        {
-            throw new Exception($"No Var {varName}");
-        }
-
-        return GLOBAL_SCOPE[varName];
+        var ar = _callStack.Peek();
+        
+        return ar[varName];
     }
 
     protected override dynamic VisitProgram(AST node)
     {
         var program = (Program)node;
-        return Visit(program.Block);
+        Log($"ENTER: PROGRAM {program.Name}");
+        var ar = new ActivationRecord(program.Name, ARType.RPOGRAM, 1);
+        _callStack.Push(ar);
+        Log(_callStack);
+        
+        Visit(program.Block);
+        
+        Log($"LEAVE: PROGRAM {program.Name}");
+        Log(_callStack);
+
+        _callStack.Pop();
+        return null;
     }
 
     protected override dynamic VisitBlock(AST node)
