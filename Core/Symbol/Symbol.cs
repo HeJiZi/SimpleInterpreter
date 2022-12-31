@@ -6,10 +6,13 @@ public class Symbol
 
     public Symbol Type { get; }
 
+    public int ScopeLevel = 0;
+
     public Symbol(string name, Symbol type = null)
     {
         Name = name;
         Type = type;
+        ScopeLevel = 0;
     }
 }
 
@@ -41,6 +44,7 @@ public class VarSymbol : Symbol
 public class ProcedureSymbol : Symbol
 {
     public List<VarSymbol> Params { get; }
+    public Block BlockAst { get; set; }
 
     public ProcedureSymbol(string name, List<VarSymbol> pParams = null) : base(name)
     {

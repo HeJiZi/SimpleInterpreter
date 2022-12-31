@@ -223,6 +223,8 @@ public class ProcedureCall : AST
 
     public List<AST> ActualParams { get; }
 
+    public ProcedureSymbol ProcedureSymbol { get; set; }
+
     public ProcedureCall(string procName, List<AST> actualParams, Token token)
     {
         ProcName = procName;

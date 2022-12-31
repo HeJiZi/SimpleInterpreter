@@ -52,6 +52,7 @@ public class ScopedSymbolTable
     {
         LogUtil.Log($"Insert: {symbol}");
         symbols[symbol.Name] = symbol;
+        symbol.ScopeLevel = scopeLevel;
     }
 
     public Symbol LookUp(string name, bool currentScopeOnly = false)

@@ -115,6 +115,36 @@ public class Interpreter: NodeVisitor
         return null;
     }
 
+    protected override dynamic VisitProcedureCall(AST node)
+    {
+        var procedureCall = (ProcedureCall)node;
+        var procName = procedureCall.ProcName;
+        var procSymbol = procedureCall.ProcedureSymbol;
+
+        var ar = new ActivationRecord(procName, ARType.PROCEDURE, procSymbol.ScopeLevel + 1);
+
+        var formalParams = procSymbol.Params;
+        var actualParams = procedureCall.ActualParams;
+        for (int i = 0; i < formalParams.Count; i++)
+        {
+            ar[formalParams[i].Name] = Visit(actualParams[i]);
+        }
+        
+        _callStack.Push(ar);
+        Log($"ENTER: PROCEDURE {procName}");
+        Log(_callStack);
+        
+
+        Visit(procSymbol.BlockAst);
+
+        Log($"LEAVE: PROCEDURE {procName}");
+        Log(_callStack);
+
+        _callStack.Pop();
+
+        return null;
+    }
+
     protected override dynamic VisitBlock(AST node)
     {
         var block = (Block)node;

@@ -36,7 +36,7 @@ namespace SimpleInterpreter
         static string GetProgram(bool print = false)
         {
             
-            string programName = "part17";
+            string programName = "part19";
             string path = $"../../../Scripts/{programName}.pas";
             string program = File.ReadAllText(path);
             if (print)

@@ -3,6 +3,7 @@
 public enum ARType 
 {
     RPOGRAM,
+    PROCEDURE,
 }
 
 public class ActivationRecord

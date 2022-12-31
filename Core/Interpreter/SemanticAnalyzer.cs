@@ -142,6 +142,7 @@ public class SemanticAnalyzer:NodeVisitor
         LogUtil.Log(procedureScope);
         currentScope = currentScope.EnclosingScope;
         LogUtil.Log($"LEAVE scope: {procName}");
+        procSymbol.BlockAst = procedureDecl.BlockNode;
         
         return null;
     }
@@ -153,6 +154,9 @@ public class SemanticAnalyzer:NodeVisitor
         {
             Visit(actualParam);
         }
+
+        var procSymbol = currentScope.LookUp(procedureCall.ProcName);
+        procedureCall.ProcedureSymbol = (ProcedureSymbol)procSymbol;
 
         return null;
     }

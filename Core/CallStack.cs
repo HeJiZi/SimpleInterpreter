@@ -26,6 +26,6 @@ public class CallStack
 
     public override string ToString()
     {
-        return $"CALL STACK\n{string.Join('\n', _records.Reverse())}\n";
+        return $"CALL STACK\n{string.Join('\n', _records)}\n";
     }
 }
