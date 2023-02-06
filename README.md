@@ -14,7 +14,10 @@ github:[https://github.com/HeJiZi/SimpleInterpreter]
 - [2022-12-17（实现加减乘除解释器）](#2022-12-17)
 - [2022-12-18（实现抽象语法树）](#2022-12-18)
 - [2022-12-24（实现脚本语法，语法树可视化）](#2022-12-24)
-
+- [2022-12-27（添加符号表与Procedure语法）]
+- [2022-12-29（实现语义分析）]
+- [2022-12-30（实现作用域与调用栈）]
+- [2022-12-31（实现函数调用与嵌套调用）]
 
 ## 项目目录
 ```
@@ -22,12 +25,20 @@ github:[https://github.com/HeJiZi/SimpleInterpreter]
     |-- Interpreter 解释器模块
         |-- Interpreter.cs 解释器，负责解释抽象语法树(AST)来执行逻辑
         |-- NodeVisitor.cs 解释器的父类，用于动态映射AST结点的处理函数
+        |-- SemanticAnalyzer.cs 语义分析模块
     |-- Structs 解释器需要用到的数据结构
         |-- AST.cs 抽象语法树结点
         |-- Token.cs 
+    |-- Symbol 符号表模块
+        |-- ScopedSymbolTable.cs 嵌套符号表，用于记录当前定义的符号
+        |-- Symbol.cs 符号类
+    |-- ActivationRecord.cs 活动记录，包含当前调用栈的参数信息
+    |-- CallStack.cs 调用栈，辅助嵌套函数的调用实现
     |-- Lexer.cs 负责将输入流拆分成不同的token并返回
     |-- Parser.cs 负责将Token转化为AST
 |-- Doc 文档及需要用到的图片资源
+|-- Exceptions 异常处理模块，用于完善报错信息
+|-- Scripts 待解释的脚本文件
 |-- Tool 工具模块
     |-- AstVisualUtil.cs 抽象语法树打印模块
 |-- Program.cs 实现main函数，解释器入口
